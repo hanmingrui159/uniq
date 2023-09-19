@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uniqueid
+  labels:
+    app: uniqueid
+spec:
+  minReadySeconds: 120
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uniqueid
+  template:
+    metadata:
+      labels:
+        app: uniqueid
+    spec:
+      containers:
+      - name: uniqueid
+        image: nginx
+        ports:
+        - containerPort: 8105
+          name: tcp8105
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: uniqueid
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    #service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    #service.beta.kubernetes.io/aws-load-balancer-ssl-ports: tls
+    #service.beta.kubernetes.io/aws-load-balancer-ssl-cert:  aiaissl
+spec:
+  ports:
+    - port: 8105
+      name: tcp8105
+      targetPort: 8105
+      protocol: TCP
+  type: LoadBalancer
+  selector:
+    app: uniqueid
